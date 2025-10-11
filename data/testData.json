@@ -1,0 +1,8 @@
+{
+    "usuarioValido": {
+        "nombre": "Juan",
+        "apellido": "Perez",
+        "email": "juan@gmail.com",
+        "password": "Password123"
+    }
+}
