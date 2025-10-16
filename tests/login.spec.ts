@@ -1,7 +1,9 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Request } from '@playwright/test';
 import { LoginPage } from '../pages/loginPage';
 import testData from '../data/testData.json';
 import { DashboardPage } from '../pages/dashboardPage';
+import TestData from '../data/testData.json';
+
 
 
 let loginPage: LoginPage;
@@ -43,5 +45,53 @@ test('TC-8: Verificar inicio de sesión exitoso con credenciales validas', async
     })         
     
 
+
+})
+
+
+test('TC-11 Loguearse con nuevo usuario creado por backend', async ({ page, request }) => {
+  const email =  (TestData.usuarioValido.email).split('@')[0]+Date.now().toString()+'@gmail.com'
+
+  const response = await request.post('http://localhost:6007/api/auth/signup', {
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'  
+    },
+    data: {
+      firstName: TestData.usuarioValido.nombre,
+      lastName: TestData.usuarioValido.apellido,
+      email: email,
+      password: TestData.usuarioValido.password
+    }          
+  })
+  expect(response.status()).toBe(201); // Verifica que el estado de la respuesta sea 201 (Creado)
+
+
+
+ // await test.step('Cuando completo el formulario de login con credenciales válidas y hago click en el boton login', async () => {
+ const respondePromiseLogin = page.waitForResponse('http://localhost:6007/api/auth/login');
+ await loginPage.completarHacerClickLogin({ email: email, password: TestData.usuarioValido.password });
+
+
+ const responseLogin = await respondePromiseLogin;//Espera la respuesta de la solicitud de inicio de sesión
+ const respondePromiseLoinJson = await responseLogin.json();//Convierte la respuesta (JSON) en un objeto JS que podés leer y validar.
+
+ expect(responseLogin.status()).toBe(200); // Verifica que el estado de la respuesta sea 200 (OK)
+ expect(respondePromiseLoinJson).toHaveProperty('token'); // Verifica que la respuesta tenga la propiedad 'token'
+ expect (typeof respondePromiseLoinJson.token).toBe('string'); // Verifica que el token sea una cadena de texto
+ expect(respondePromiseLoinJson).toHaveProperty('user'); // Verifica que la respuesta tenga la propiedad 'user'
+ expect(respondePromiseLoinJson.user).toEqual(expect.objectContaining({  //Verifica que el objeto user contenga las siguientes propiedades
+    id: expect.any(String), 
+    firstName: TestData.usuarioValido.nombre,
+    lastName: TestData.usuarioValido.apellido,
+    email: email,
+   }));
+ 
+ 
+    // await loginPage.completarHacerClickLogin({email: email, password: TestData.usuarioValido.password});
+    await expect(page.getByText('Inicio de sesión exitoso')).toBeVisible(); // Verificar que aparezca el mensaje de inicio de sesión exitoso
+    await expect(dashboardPage.dashboardTitle).toBeVisible(); // Verifica que el título del dashboard esté visible
+        
+          
 
 })
