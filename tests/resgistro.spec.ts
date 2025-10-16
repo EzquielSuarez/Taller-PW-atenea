@@ -1,8 +1,9 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Request, request } from '@playwright/test';
 import { RegistroPage } from '../pages/registroPage';
 import TestData from '../data/testData.json';
 
 let registroPage: RegistroPage;
+
 
 //Con el beforeEach se instancia la clase RegistroPage y se navega a la página de registro antes de cada prueba
 test.beforeEach(async ({ page }) => {
@@ -103,3 +104,103 @@ test('TC-6: Verificar que un usuario no pueda registrarse con un correo electró
     await expect(page.getByText('Registro exitoso!')).not.toBeVisible(); // Verificar NO que aparezca el mensaje de registro exitoso
 
 })  
+
+test('TC-8: Verificar registro exitoso con datos validos verificando repuesta de la API', async ({ page }) => {
+
+    const email =  (TestData.usuarioValido.email).split('@')[0]+Date.now().toString()+'@gmail.com'
+    TestData.usuarioValido.email=email;
+
+    // Rellenar los campos del formulario
+    await registroPage.completarFormulario(TestData.usuarioValido); 
+
+    // Verificar la API de tipo POST http://localhost:6007/api/auth/signup resonda con un status code 201
+    // 1️⃣ Escucho la URL de registro
+    const respondePromise = page.waitForResponse('http://localhost:6007/api/auth/signup');
+    
+
+    // 2️⃣ Envío el formulario (esto dispara la solicitud POST)
+    await registroPage.hacerClickRegistrar();
+    
+
+    // 3️⃣ Espero la respuesta del servidor
+    const response = await respondePromise;
+    const responsebody = await response.json(); //Convierte la respuesta (JSON) en un objeto JS que podés leer y validar.
+
+    // 4️⃣ Verifico que la respuesta haya sido exitosa (HTTP 201) y el cuerpo del Body
+    expect(response.status()).toBe(201); // Verifica que el estado de la respuesta sea 201 (Creado)
+    expect(responsebody).toHaveProperty('token'); // Verifica que la respuesta tenga la propiedad 'token'
+    expect(typeof responsebody.token).toBe('string'); // Verifica que el token sea una cadena
+    expect(responsebody).toHaveProperty('user'); // Verifica que la respuesta tenga la propiedad 'user'
+    expect(responsebody.user).toEqual(expect.objectContaining({  //Verifica que el objeto user contenga las siguientes propiedades
+      id: expect.any(String), 
+      firstName: TestData.usuarioValido.nombre,
+      lastName: TestData.usuarioValido.apellido,
+      email: TestData.usuarioValido.email,
+    })
+    )
+
+    // Verificar que aparezca el mensaje de registro exitoso
+    await expect(page.getByText('Registro exitoso!')).toBeVisible(); 
+
+})      
+
+
+test('TC-9 Generar signup desde la API', async ({ page, request }) => {
+  const email =  (TestData.usuarioValido.email).split('@')[0]+Date.now().toString()+'@gmail.com' 
+  // TestData.usuarioValido.email=email;
+
+  const response = await request.post('http://localhost:6007/api/auth/signup', {
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+    data: {
+      firstName: TestData.usuarioValido.nombre,
+      lastName: TestData.usuarioValido.apellido,  
+      email: email,
+      password: TestData.usuarioValido.password
+    } 
+  });
+
+  const responsebody = await response.json(); //Convierte la respuesta (JSON) en un objeto JS que podés leer y validar.
+  expect(response.status()).toBe(201); // Verifica que el estado de la respuesta sea 201 (Creado)
+  expect(responsebody).toHaveProperty('token'); // Verifica que la respuesta tenga la propiedad 'token'
+  expect(typeof responsebody.token).toBe('string'); // Verifica que el token sea una cadena           
+  expect(responsebody).toHaveProperty('user'); // Verifica que la respuesta tenga la propiedad 'user'
+  expect(responsebody.user).toEqual(expect.objectContaining({  //Verifica que el objeto user contenga las siguientes propiedades
+    id: expect.any(String), 
+    firstName: TestData.usuarioValido.nombre,
+    lastName: TestData.usuarioValido.apellido,
+    email: email,
+  })
+  )
+
+})
+
+
+test('TC-10: Verificar el comportamiento del front ante un error 500 en el registro ', async ({ page }) => {
+  const email =  (TestData.usuarioValido.email).split('@')[0]+Date.now().toString()+'@gmail.com'
+  TestData.usuarioValido.email=email;
+
+  // Interceptar la solicitud de registro y simular un error 500
+  await page.route('**/api/auth/signup', route => {
+    route.fulfill({
+      status: 500,
+      contentType: 'application/json',  
+      body: JSON.stringify({ message: 'Internal Server Error' }),
+    });
+  }
+  )
+
+
+  // Rellenar los campos del formulario
+  await registroPage.completarHacerClickRegistrar(TestData.usuarioValido); 
+
+  // Verificar que aparezca el mensaje de error
+  await expect(page.getByText('Internal Server Error')).toBeVisible();
+  await expect(page.getByText('Registro exitoso!')).not.toBeVisible(); // Verificar NO que aparezca el mensaje de registro exitoso
+
+});
+
+
+
