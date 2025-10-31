@@ -10,11 +10,11 @@ let dashboardPage: DashboardPage;
 let modalEnviarTransferencia: ModalEnviarTransferencia;
 
 const testUsuarioEnvia = test.extend({
-    storageState: require.resolve('../playwright/.auth/usuarioEnvia.json')
+    storageState: path.resolve(__dirname, '../playwright/.auth/usuarioEnvia.json')
 });
 
 const testUsuarioRecibe = test.extend({
-    storageState: require.resolve('../playwright/.auth/usuarioRecibe.json')
+    storageState: path.resolve(__dirname, '../playwright/.auth/usuarioRecibe.json')
 });
 
 test.beforeEach(async ({ page }) => {
@@ -42,14 +42,14 @@ testUsuarioRecibe('TC-13 Verificar que el usuario recibe una transacción', asyn
 testUsuarioRecibe('TC-14 Verificar transferencia recibida (Enviada por API)', async ({ page, request }) => {
     //#1 Prepareción para lecturas de de datos y token jwt del remitente.
     //Leemos el archivo JSON que contiene los datos del usuario que envia dinero para obtener el email y el password
-    const usuarioEnviaData = require.resolve('../playwright/.auth/usuarioEnvia.data.json'); //Ubicamos el archivo JSON que contiene los datos del usuario que envia dinero
+    const usuarioEnviaData = path.resolve(__dirname, '../playwright/.auth/usuarioEnvia.data.json'); //Ubicamos el archivo JSON que contiene los datos del usuario que envia dinero
     const usuarioEnviaContenidoData = await fs.readFile(usuarioEnviaData, 'utf-8'); //Leemos el contenido del archivo JSON
     const datosDeUsuarioEnvia = JSON.parse(usuarioEnviaContenidoData); //Convertimos el objeto de Js a un JSON
     const emailDeUsuarioEnvia = datosDeUsuarioEnvia.email; //Obtenemos el email del usuario que envia dinero
     expect (emailDeUsuarioEnvia, 'El email del usuario que envia dinero no es valido').toBeDefined();
 
     //Leemos el archivo autentificación del usuario que envia dinero para obtener el token jwt
-    const usuarioEnviaAuth = require.resolve('../playwright/.auth/usuarioEnvia.json'); //Ubicamos el archivo JSON que contiene los datos del usuario que envia dinero
+    const usuarioEnviaAuth = path.resolve(__dirname, '../playwright/.auth/usuarioEnvia.json'); //Ubicamos el archivo JSON que contiene los datos del usuario que envia dinero
     const usuarioEnviaContenidoAuth = await fs.readFile(usuarioEnviaAuth, 'utf-8'); //Leemos el contenido del archivo JSON
     const datosDeUsuarioEnviaAuth = JSON.parse(usuarioEnviaContenidoAuth); //Convertimos el objeto de Js a un JSON
 
