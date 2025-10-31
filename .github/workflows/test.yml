@@ -34,18 +34,18 @@ jobs:
           - name: Crear archivo .env para el backend
             run: | 
               echo "MONGO_URI=${{env.MONGO_URI}}" > app/backend/.env 
-              echo "JWT_SECRET=${{env.JWT_SECRET}}" >> app/backend/.env
+              echo "JWT_SECRET=${{env.JWT_SECRET}}" >> app/backend/.env 
               echo "PORT=${{env.PORT}}" >> app/backend/.env
               echo "VITE_API_URL=${{env.VITE_API_URL}}" >> app/backend/.env
 
           - name: Instalar dependencias del backend
             run: |
-              cd app/backend
+              cd app/
               npm install    
 
           - name: Construir backend
             run: |
-              cd app/backend
+              cd app/ backend
               npm run dev > backend.log 2>&1 &       
 
           # Se instala la herramienta wait-on globalmente    
@@ -59,7 +59,7 @@ jobs:
           # Instalar dependencias del frontend
           - name: Instalar dependencias frontend
             run: |
-              cd app/ frontend
+              cd app/frontend
               npm install
             env: 
               VITE_API_URL: ${{env.VITE_API_URL}}
