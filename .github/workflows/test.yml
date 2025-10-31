@@ -2,9 +2,9 @@ name: CI - Clonando App y ejecutando tests
 
 on:
     push:
-        branches: [mail]
+        branches: [main]
     pull_request:
-        branches: [mail]
+        branches: [main]  
         
 jobs:
     test:
