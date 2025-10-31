@@ -24,7 +24,7 @@ jobs:
 
         steps:
           - name: Checkout repo actual (con el workflow) # Clonar el repo actual 
-            uses: actions/checkout@v4 # Clonar el repo actual 
+            uses: actions/checkout@v4 # Clonar el repo actual.
           
 
           - name: Clonar repo Athena Redux Bank
