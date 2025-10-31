@@ -67,6 +67,7 @@ jobs:
           #Esperar a que el frontend esté listo
           - name: Esperar frontend
             run: wait-on http://localhost:3000
+            
 
 
           
