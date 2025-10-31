@@ -61,13 +61,17 @@ jobs:
             run: |
               cd app/frontend
               npm install
+          - name: Levantar frontend    
+            run: |
+              cd app/frontend
+              npm run dev > frontend.log 2>&1 &
             env: 
               VITE_API_URL: ${{env.VITE_API_URL}}
 
           #Esperar a que el frontend esté listo
           - name: Esperar frontend
             run: wait-on http://localhost:3000
-            
+
 
 
           
