@@ -24,7 +24,7 @@ jobs:
 
         steps:
           - name: Checkout repo actual (con el workflow) # Clonar el repo actual 
-            uses: actions/checkout@v4 # Clonar el repo actual.
+            uses: actions/checkout@v4
           
 
           - name: Clonar repo Athena Redux Bank
@@ -40,7 +40,7 @@ jobs:
 
           - name: Instalar dependencias del backend
             run: |
-              cd app/
+              cd app/backend
               npm install    
 
           - name: Construir backend
@@ -66,7 +66,7 @@ jobs:
 
           #Esperar a que el frontend esté listo
           - name: Esperar frontend
-            run: wait-on tcp:6007
+            run: wait-on http://localhost:3000
 
 
           
