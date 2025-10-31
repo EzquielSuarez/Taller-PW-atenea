@@ -86,7 +86,7 @@ jobs:
               name: playwright-report
               path: ./playwright-report
 
-          - name: Deployar reportes a github gages
+          - name: Deployar reportes a github pages
             if: always()
             run: |
               git config --global user.name "github-actions[bot]"
@@ -106,6 +106,7 @@ jobs:
               git push origin gh-pages 
      
           - name: Imprimir link en la consola
+            if: always()  
             run: |
               echo "Reporte disponible en: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/report-${{github.run_number}}/"
 
