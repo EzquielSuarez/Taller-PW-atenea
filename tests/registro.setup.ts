@@ -54,7 +54,8 @@ setup('Generar usuario que envía dinero', async ({ page, request }) => {
 })
 
 
-setup('Loguearse con usuario que recibe dinero', async ({ page }) => {
+setup('Crear, Loguearse con usuario que recibe dinero', async ({ page, request }) => {
+    const nuevoUsuario = await BackendUtils.crearUsuarioPorAPI(request, TestData.usuarioValido ,false);
     await loginPage.completarHacerClickLogin(TestData.usuarioValido);
     await expect(dashboardPage.dashboardTitle).toBeVisible();
     await expect(page.getByText('Inicio de sesión exitoso')).toBeVisible();

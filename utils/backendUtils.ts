@@ -1,8 +1,17 @@
 import {APIRequestContext, expect } from '@playwright/test';
 
 export class BackendUtils {
-  static async crearUsuarioPorAPI(request: APIRequestContext, usuario: any) {
-    const email = (usuario.email).split('@')[0] + Date.now().toString() + '@gmail.com';
+
+  static async crearUsuarioPorAPI(request: APIRequestContext, usuario: any, esNuevo: boolean = true) {
+    let email:string;
+
+    if (esNuevo) {
+      email = (usuario.email).split('@')[0] + Date.now().toString() + '@gmail.com';
+    } else {
+      email = usuario.email;
+    }
+
+
     const response = await request.post('http://localhost:6007/api/auth/signup', {
       headers: {
         'Accept': 'application/json',
