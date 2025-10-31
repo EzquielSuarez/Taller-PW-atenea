@@ -12,9 +12,10 @@ let loginPage: LoginPage;
 let dashboardPage: DashboardPage;
 let modalCrearCuentaPage: ModalCrearCuenta;
 
-const usuarioEnviaAuthfile =  './playwright/.auth/usuarioEnvia.json';
-const usuarioRecibeAuthfile = './playwright/.auth/usuarioRecibe.json';
-const usuarioEnviaDataFile = './playwright/.auth/usuarioEnvia.data.json';
+const authDir = path.resolve(__dirname, '..', 'playwright/.auth');
+const usuarioEnviaAuthfile =  path.join(authDir, 'usuarioEnvia.json');
+const usuarioRecibeAuthfile = path.join(authDir, 'usuarioRecibe.json');
+const usuarioEnviaDataFile = path.join('playwright/.auth/usuarioEnvia.data.json');
 
 
 //Con el beforeEach se instancia la clase RegistroPage y se navega a la página de registro antes de cada prueba
@@ -29,6 +30,8 @@ setup.beforeEach(async ({ page }) => {
 
 
 setup('Generar usuario que envía dinero', async ({ page, request }) => {
+    // Asegurar que exista el directorio de auth para guardar los storageState y data
+    await fs.mkdir(authDir, { recursive: true });
     // Crear un nuevo usuario a través de la API utilizando BackendUtils
     const nuevoUsuario = await BackendUtils.crearUsuarioPorAPI(request, TestData.usuarioValido);
 
@@ -54,7 +57,9 @@ setup('Generar usuario que envía dinero', async ({ page, request }) => {
 })
 
 
-setup('Loguearse con usuario que recibe dinero', async ({ page }) => {
+setup('Crear, Loguearse con usuario que recibe dinero', async ({ page, request }) => {
+    await fs.mkdir(authDir, { recursive: true });
+    const nuevoUsuario = await BackendUtils.crearUsuarioPorAPI(request, TestData.usuarioValido ,false);
     await loginPage.completarHacerClickLogin(TestData.usuarioValido);
     await expect(dashboardPage.dashboardTitle).toBeVisible();
     await expect(page.getByText('Inicio de sesión exitoso')).toBeVisible();
