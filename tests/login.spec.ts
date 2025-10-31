@@ -1,10 +1,8 @@
 import { test, expect, Request } from '@playwright/test';
 import { LoginPage } from '../pages/loginPage';
-import testData from '../data/testData.json';
 import { DashboardPage } from '../pages/dashboardPage';
 import TestData from '../data/testData.json';
-
-
+import { BackendUtils } from '../utils/backendUtils';
 
 let loginPage: LoginPage;
 let dashboardPage: DashboardPage;
@@ -15,7 +13,6 @@ test.beforeEach(async ({ page }) => {
    dashboardPage = new DashboardPage(page);
    await loginPage.visitarPaginaLogin();
 });
-
 
 test('TC-7: Verificación de elementos visuales en la pagina de login', async ({ page }) => {
 
@@ -37,7 +34,7 @@ test('TC-7: Verificación de elementos visuales en la pagina de login', async ({
 test('TC-8: Verificar inicio de sesión exitoso con credenciales validas', async ({ page }) => {
 
     await test.step('Cuando completo el formulario de login con credenciales válidas y hago click en el boton login', async () => {
-        await loginPage.completarHacerClickLogin(testData.usuarioValido);
+        await loginPage.completarHacerClickLogin(TestData.usuarioValido);
         await expect(page.getByText('Inicio de sesión exitoso')).toBeVisible(); // Verificar que aparezca el mensaje de inicio de sesión exitoso
        
         await expect(dashboardPage.dashboardTitle).toBeVisible(); // Verifica que el título del dashboard esté visible
@@ -50,27 +47,13 @@ test('TC-8: Verificar inicio de sesión exitoso con credenciales validas', async
 
 
 test('TC-11 Loguearse con nuevo usuario creado por backend', async ({ page, request }) => {
-  const email =  (TestData.usuarioValido.email).split('@')[0]+Date.now().toString()+'@gmail.com'
-
-  const response = await request.post('http://localhost:6007/api/auth/signup', {
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json'  
-    },
-    data: {
-      firstName: TestData.usuarioValido.nombre,
-      lastName: TestData.usuarioValido.apellido,
-      email: email,
-      password: TestData.usuarioValido.password
-    }          
-  })
-  expect(response.status()).toBe(201); // Verifica que el estado de la respuesta sea 201 (Creado)
-
-
-
+  // Crear un nuevo usuario a través de la API utilizando BackendUtils
+  const backendUtils = await BackendUtils.crearUsuarioPorAPI(request, TestData.usuarioValido);
+  
  // await test.step('Cuando completo el formulario de login con credenciales válidas y hago click en el boton login', async () => {
  const respondePromiseLogin = page.waitForResponse('http://localhost:6007/api/auth/login');
- await loginPage.completarHacerClickLogin({ email: email, password: TestData.usuarioValido.password });
+ 
+ await loginPage.completarHacerClickLogin({ email: backendUtils.email, password: TestData.usuarioValido.password });
 
 
  const responseLogin = await respondePromiseLogin;//Espera la respuesta de la solicitud de inicio de sesión
@@ -84,7 +67,7 @@ test('TC-11 Loguearse con nuevo usuario creado por backend', async ({ page, requ
     id: expect.any(String), 
     firstName: TestData.usuarioValido.nombre,
     lastName: TestData.usuarioValido.apellido,
-    email: email,
+    email: backendUtils.email,//Usa el email generado por la API
    }));
  
  
