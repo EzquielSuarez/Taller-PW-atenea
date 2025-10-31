@@ -2,8 +2,9 @@ import { test, expect, Request, request } from '@playwright/test';
 import { RegistroPage } from '../pages/registroPage';
 import TestData from '../data/testData.json';
 
-let registroPage: RegistroPage;
 
+
+let registroPage: RegistroPage;
 
 //Con el beforeEach se instancia la clase RegistroPage y se navega a la página de registro antes de cada prueba
 test.beforeEach(async ({ page }) => {
@@ -204,3 +205,34 @@ test('TC-10: Verificar el comportamiento del front ante un error 500 en el regis
 
 
 
+test('TC-11 Loguearse desde la API', async ({ page, request }) => {
+  const email =  (TestData.usuarioValido.email).split('@')[0]+Date.now().toString()+'@gmail.com' 
+  // TestData.usuarioValido.email=email;
+
+  const response = await request.post('http://localhost:6007/api/auth/signup', {
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+    data: {
+      firstName: TestData.usuarioValido.nombre,
+      lastName: TestData.usuarioValido.apellido,  
+      email: email,
+      password: TestData.usuarioValido.password
+    } 
+  });
+
+  const responsebody = await response.json(); //Convierte la respuesta (JSON) en un objeto JS que podés leer y validar.
+  expect(response.status()).toBe(201); // Verifica que el estado de la respuesta sea 201 (Creado)
+  expect(responsebody).toHaveProperty('token'); // Verifica que la respuesta tenga la propiedad 'token'
+  expect(typeof responsebody.token).toBe('string'); // Verifica que el token sea una cadena           
+  expect(responsebody).toHaveProperty('user'); // Verifica que la respuesta tenga la propiedad 'user'
+  expect(responsebody.user).toEqual(expect.objectContaining({  //Verifica que el objeto user contenga las siguientes propiedades
+    id: expect.any(String), 
+    firstName: TestData.usuarioValido.nombre,
+    lastName: TestData.usuarioValido.apellido,
+    email: email,
+  })
+  )
+
+})

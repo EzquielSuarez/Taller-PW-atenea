@@ -1,34 +1,23 @@
-// import { Page, Locator, Request } from '@playwright/test';
+import {APIRequestContext, expect } from '@playwright/test';
 
-// export class BanckendUtils {
-//   readonly page: Page;
+export class BackendUtils {
+  static async crearUsuarioPorAPI(request: APIRequestContext, usuario: any) {
+    const email = (usuario.email).split('@')[0] + Date.now().toString() + '@gmail.com';
+    const response = await request.post('http://localhost:6007/api/auth/signup', {
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      data: {
+        firstName: usuario.nombre,    
+        lastName: usuario.apellido,
+        email: email,
+        password: usuario.password
+      }
+    });
+    expect(response.status()).toBe(201);
+    return { email: email, password: usuario.password };
+  }
+}
+
   
-//   constructor(page: Page) {
-//     this.page = page;
-    
-//   }
-
-//   async enviarRequestBankend(endopoint: string) {
-//     const response = await request.post('http://localhost:6007/api/auth/signup', {
-
-//       headers: {
-//       'Accept': 'application/json',
-//       'Content-Type': 'application/json'
-//       },
-//       data: {
-//        firstName: TestData.usuarioValido.nombre,
-//        lastName: TestData.usuarioValido.apellido,  
-//        email: email,
-//        password: TestData.usuarioValido.password
-//       } 
-
-//     });
-
-//   const responsebody = await response.json(); //Convierte la respuesta (JSON) en un objeto JS que podés leer y validar.
-
-//   }
-
-
-    
-
-// };
